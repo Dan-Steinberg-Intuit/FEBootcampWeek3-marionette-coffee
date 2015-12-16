@@ -9,7 +9,7 @@ App.CoffeeCollection = Backbone.Collection.extend({
 });
 
 // Create Coffee ItemView
-App.CoffeeCup = Marionette.ItemView.extend({
+App.CoffeeCupView = Marionette.ItemView.extend({
 	template: "#template",
 });
 
@@ -22,32 +22,38 @@ App.FormView = Marionette.ItemView.extend({
 		"submit": "handleSubmit"
 	},
 
+	ui: {
+		type: "input[name='type']",
+		description: "input[name='desc']",
+		img: "input[name='img']"
+	},
+
 	handleSubmit: function(e) {
 		e.preventDefault();
 
-		// Grab the form's data
-		App.newCoffee = {};
-		App.newCoffee.type = $("input[name='type']").val();
-		App.newCoffee.description = $("input[name='desc']").val();
-		App.newCoffee.img = $("input[name='img']").val();
-
 		// Add the new model to the collection
-		App.coffees.add(App.newCoffee);
+		App.coffees.add({
+			type: this.ui.type.val(),
+			description: this.ui.description.val(),
+			img: this.ui.img.val()
+		});
+
+		// Clear the form fields
+		this.ui.type.val("");
+		this.ui.description.val("");
+		this.ui.img.val("");
 	}
 });
 
 // Create CollectionView
 App.CoffeeMenu = Marionette.CollectionView.extend({
 	el: ".target",
-	childView: App.CoffeeCup
+	childView: App.CoffeeCupView
 });
 
 
 // What should happen on Start
 App.on("start", function() {
-
-	// Instantiate the Form
-	App.formView = new App.FormView();
 
 	// Instantiate some Models
 	App.mocha = new App.Coffee({type: "Mocha", description: "Coffee with chocolate", img: "mocha"});
@@ -58,9 +64,9 @@ App.on("start", function() {
 	// Instantiate and populate the CollectionView
 	App.coffeeMenu = new App.CoffeeMenu({collection: App.coffees});
 
-	// Render the Form and CollectionView
-	App.formView.render();
+	// Render the CollectionView and the Form
 	App.coffeeMenu.render();
+	new App.FormView().render();
 });
 
 App.start();
